@@ -32,7 +32,9 @@ typedef struct qs_state {
     gchar *synergy_path;
     gchar *client_name;
     int running;
+    int use_socks;
     pid_t pid;
+    pid_t tunnel_pid;
 } qs_state_t;
 
 GdkPixbuf *make_logo(void);

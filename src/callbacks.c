@@ -88,6 +88,10 @@ void entry_changed_cb(GtkEntry *entry, gpointer data) {
     *((char **) data) = (char *) gtk_entry_get_text(entry);
 }
 
+void checkbox_changed_cb(GtkEntry *entry, gpointer data) {
+    *((int *) data) = gtk_toggle_button_get_active(entry);
+}
+
 void notebook_page_switched(GtkNotebook *notebook, GtkNotebookPage *page,
         guint page_num, gpointer user_data) {
     if(start_button) {
@@ -210,6 +214,7 @@ void start_button_clicked(GtkWidget *widget, gpointer data) {
             state->running = SYNERGY_SERVER_RUNNING;
         }
         else if(gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook)) == 1) {
+            char *hostname;
             save_config(state);
             
             cmd = g_strjoin("/", state->synergy_path, "synergyc", NULL);
@@ -231,14 +236,31 @@ void start_button_clicked(GtkWidget *widget, gpointer data) {
                 return;
             }
 
+            if(state->use_socks) {
+                state->tunnel_pid = fork();
+                if(state->tunnel_pid == 0) {
+                    char *tunnel_spec;
+                    asprintf(&tunnel_spec, "localhost:24800:%s:24800",
+                             state->hostname);
+                    execlp("ssh", "ssh", "-N", "-L", tunnel_spec,
+                           state->hostname, NULL);
+                }
+            }
+
             state->pid = fork();
 
             if(state->pid == 0) {
+                if(state->use_socks && state->tunnel_pid != -1) {
+                    hostname = "localhost";
+                } else {
+                    hostname = state->hostname;
+                }
+
                 if(!strcmp(state->client_name, "")) {
-                    execlp(cmd, cmd, "-f", state->hostname, NULL);
+                    execlp(cmd, cmd, "-f", hostname, NULL);
                 } else {
                     execlp(cmd, cmd, "-f", "--name", state->client_name,
-                        state->hostname, NULL);
+                        hostname, NULL);
                 }
             }
             
@@ -254,6 +276,11 @@ void start_button_clicked(GtkWidget *widget, gpointer data) {
         kill(state->pid, SIGTERM);
 
         wait(&status);
+
+        if(state->tunnel_pid > 0) {
+            kill(state->tunnel_pid, SIGTERM);
+            wait(&status);
+        }
         
         gtk_button_set_label(GTK_BUTTON(widget), GTK_STOCK_EXECUTE);
         gtk_widget_set_sensitive(notebook, TRUE);

@@ -87,6 +87,7 @@ GtkWidget *make_client_tab(qs_state_t *state) {
     GtkWidget *vbox, *vbox1;
     GtkWidget *label;
     GtkWidget *entry;
+    GtkWidget *checkbox;
     
     /* client's vbox */
     vbox1 = gtk_vbox_new(FALSE, 18);
@@ -108,6 +109,13 @@ GtkWidget *make_client_tab(qs_state_t *state) {
     /* update state information when text changes */
     g_signal_connect(G_OBJECT(entry), "changed",
         G_CALLBACK(entry_changed_cb), (gpointer) &state->hostname);
+
+    checkbox = gtk_check_button_new_with_label(_("SOCKS"));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbox), state->use_socks);
+    gtk_box_pack_start(GTK_BOX(vbox), checkbox, FALSE, FALSE, 0);
+
+    g_signal_connect(G_OBJECT(checkbox), "toggled",
+        G_CALLBACK(checkbox_changed_cb), (gpointer) &state->use_socks);
     
     /* screen name */
     vbox = gtk_vbox_new(FALSE, 6);
@@ -125,7 +133,7 @@ GtkWidget *make_client_tab(qs_state_t *state) {
     /* update state information when text changes */
     g_signal_connect(G_OBJECT(entry), "changed",
         G_CALLBACK(entry_changed_cb), (gpointer) &state->client_name);
-    
+
     return vbox1;
 }
 
