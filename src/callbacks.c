@@ -273,6 +273,9 @@ void start_button_clicked(GtkWidget *widget, gpointer data) {
         gtk_widget_set_sensitive(notebook, FALSE);
     }
     else {
+        /* Prevent multiple entry */
+        state->running = 0;
+
         kill(state->pid, SIGTERM);
 
         wait(&status);
@@ -284,8 +287,6 @@ void start_button_clicked(GtkWidget *widget, gpointer data) {
         
         gtk_button_set_label(GTK_BUTTON(widget), GTK_STOCK_EXECUTE);
         gtk_widget_set_sensitive(notebook, TRUE);
-        
-        state->running = 0;
     }
 }
 

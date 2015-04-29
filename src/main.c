@@ -20,6 +20,7 @@
 
 #include <stdlib.h>
 #include <sys/types.h>
+#include <signal.h>
 #include <gtk/gtk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include "callbacks.h"
@@ -142,6 +143,13 @@ int main(int argc, char **argv) {
 
     /* display the main window */   
     gtk_widget_show_all(main_window);
+
+    /* Treat terminated children as stop button presses*/
+    void stop_on_sigchld(int num) {
+        if (state->running)
+            start_button_clicked(G_OBJECT(start_button), (gpointer) state);
+    }
+    signal(SIGCHLD, stop_on_sigchld);
     
     /* GTK mainloop */
     gtk_main();
