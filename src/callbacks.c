@@ -203,8 +203,13 @@ void start_button_clicked(GtkWidget *widget, gpointer data) {
             state->pid = fork();
         
             if(state->pid == 0) {
-                execlp(cmd, cmd, "-f", "--config",
-                    ".quicksynergy/synergy.conf", NULL);
+                if (state->req_tunnel) {
+                    execlp(cmd, cmd, "-f", "-a", "127.0.1.1", "--config",
+                        ".quicksynergy/synergy.conf", NULL);
+                } else {
+                    execlp(cmd, cmd, "-f", "--config",
+                        ".quicksynergy/synergy.conf", NULL);
+                }
             }
             
             g_free(cmd);

@@ -33,6 +33,7 @@ typedef struct qs_state {
     gchar *client_name;
     int running;
     int use_socks;
+    int req_tunnel;
     pid_t pid;
     pid_t tunnel_pid;
 } qs_state_t;

@@ -62,6 +62,11 @@ qs_state_t *load_config() {
          g_key_file_get_value(key_file, "Share", "Right", NULL) :
          _("Right"));
 
+    state->req_tunnel =
+        (g_key_file_has_key(key_file, "Require", "Tunnel", NULL) ?
+         g_key_file_get_value(key_file, "Require", "Tunnel", NULL) :
+         0);
+
     state->hostname =
         (g_key_file_has_key(key_file, "Use", "Hostname", NULL) ?
          g_key_file_get_value(key_file, "Use", "Hostname", NULL) :
@@ -116,6 +121,7 @@ void save_config(qs_state_t *state) {
     if(g_strcmp0(state->right, _("Right"))) {
         g_key_file_set_value(key_file, "Share", "Right", state->right);
     }
+    g_key_file_set_boolean(key_file, "Require", "Tunnel", state->req_tunnel);
 
     g_key_file_set_value(key_file, "Use", "Hostname", state->hostname);
     

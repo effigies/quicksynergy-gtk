@@ -54,15 +54,28 @@ GtkWidget *screen_entry_new(char **textp, const char *position) {
 
 GtkWidget *make_server_tab(qs_state_t *state) {
     GtkWidget *table;
+    GtkWidget *vbox1;
+    GtkWidget *checkbox;
     GtkWidget *image;
     GtkWidget *above_entry;
     GtkWidget *below_entry;
     GtkWidget *left_entry;
     GtkWidget *right_entry;
     
+    vbox1 = gtk_vbox_new(FALSE, 18);
+    gtk_container_set_border_width(GTK_CONTAINER(vbox1), 12);
+
     /* build the table that will hold the server layout widgets */
     table = gtk_table_new(3, 3, TRUE);
-    gtk_container_set_border_width(GTK_CONTAINER(table), 12);
+    gtk_box_pack_start(GTK_BOX(vbox1), table, FALSE, FALSE, 0);
+
+    /* Checkbox to require local/tunneled connections only */
+    checkbox = gtk_check_button_new_with_label(_("Tunneled Only"));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(checkbox), state->req_tunnel);
+    gtk_box_pack_start(GTK_BOX(vbox1), checkbox, FALSE, FALSE, 0);
+
+    g_signal_connect(G_OBJECT(checkbox), "toggled",
+        G_CALLBACK(checkbox_changed_cb), (gpointer) &state->req_tunnel);
     
     /* text entries for server configuration */
     above_entry = screen_entry_new(&state->above, _("Above"));
@@ -79,8 +92,8 @@ GtkWidget *make_server_tab(qs_state_t *state) {
     /* image to be displayed in the center of the main window */
     image = gtk_image_new_from_stock(GTK_STOCK_HOME, GTK_ICON_SIZE_DIALOG);
     gtk_table_attach_defaults(GTK_TABLE(table), image, 1, 2, 1, 2);
-    
-    return table;
+
+    return vbox1;
 }
 
 GtkWidget *make_client_tab(qs_state_t *state) {
